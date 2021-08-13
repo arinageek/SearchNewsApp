@@ -3,6 +3,7 @@ package com.example.searchnewsapp.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -10,7 +11,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.mynewsapp.api.Article
 import com.example.searchnewsapp.databinding.NewsRecyclerViewItemBinding
 
-class NewsAdapter : PagingDataAdapter<Article, NewsAdapter.NewsViewHolder>(NEWS_COMPARATOR) {
+class SavedNewsAdapter : RecyclerView.Adapter<SavedNewsAdapter.NewsViewHolder>() {
 
     inner class NewsViewHolder(private val binding: NewsRecyclerViewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -19,7 +20,7 @@ class NewsAdapter : PagingDataAdapter<Article, NewsAdapter.NewsViewHolder>(NEWS_
             binding.root.setOnClickListener {
                 val position = bindingAdapterPosition
                 if(position != RecyclerView.NO_POSITION){
-                    val item = getItem(position)
+                    val item = differ.currentList[position]
                     if (item != null){
                         OnItemClickListener?.invoke(item)
                     }
@@ -40,6 +41,18 @@ class NewsAdapter : PagingDataAdapter<Article, NewsAdapter.NewsViewHolder>(NEWS_
         }
     }
 
+    private val differCallback = object : DiffUtil.ItemCallback<Article>(){
+        override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
+            return oldItem.url == newItem.url
+        }
+
+        override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
+            return oldItem == newItem
+        }
+
+    }
+    val differ = AsyncListDiffer(this, differCallback)
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
         val binding = NewsRecyclerViewItemBinding.inflate(
             LayoutInflater.from(parent.context), parent, false)
@@ -47,28 +60,18 @@ class NewsAdapter : PagingDataAdapter<Article, NewsAdapter.NewsViewHolder>(NEWS_
     }
 
     override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
-        val currentItem = getItem(position)
+        val currentItem = differ.currentList[position]
         currentItem?.let{
             holder.bind(it)
         }
+    }
+
+    override fun getItemCount(): Int {
+        return differ.currentList.size
     }
 
     private var OnItemClickListener: ((Article) -> Unit)? = null
     fun setOnItemClickListener(listener: (Article)->Unit){
         OnItemClickListener = listener
     }
-
-    companion object{
-        private val NEWS_COMPARATOR = object : DiffUtil.ItemCallback<Article>(){
-            override fun areItemsTheSame(oldItem: Article, newItem: Article): Boolean {
-                return oldItem.url == newItem.url
-            }
-
-            override fun areContentsTheSame(oldItem: Article, newItem: Article): Boolean {
-                return oldItem == newItem
-            }
-
-        }
-    }
-
 }

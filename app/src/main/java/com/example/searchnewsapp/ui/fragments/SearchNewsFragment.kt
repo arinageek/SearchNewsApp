@@ -6,6 +6,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import com.example.searchnewsapp.R
 import com.example.searchnewsapp.adapters.NewsAdapter
@@ -23,12 +24,11 @@ import kotlinx.coroutines.launch
 class SearchNewsFragment : Fragment(R.layout.search_news_fragment) {
 
     private val newsViewModel by viewModels<NewsViewModel>()
-    private lateinit var binding: SearchNewsFragmentBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = SearchNewsFragmentBinding.bind(view)
+        val binding = SearchNewsFragmentBinding.bind(view)
 
         var job : Job? = null
         binding.etSearch.addTextChangedListener { editable ->
@@ -42,6 +42,12 @@ class SearchNewsFragment : Fragment(R.layout.search_news_fragment) {
         }
 
         val newsAdapter = NewsAdapter()
+
+        newsAdapter.setOnItemClickListener{
+            val action = SearchNewsFragmentDirections.actionSearchNewsFragmentToArticleFragment(it)
+            findNavController().navigate(action)
+        }
+
         binding.rvSearchNews.apply{
             setHasFixedSize(true)
             adapter = newsAdapter

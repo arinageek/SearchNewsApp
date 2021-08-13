@@ -6,6 +6,7 @@ import androidx.paging.cachedIn
 import com.example.mynewsapp.api.Article
 import com.example.searchnewsapp.repository.NewsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,12 +26,23 @@ class NewsViewModel @Inject constructor (
     }
 
     fun getBreakingNews() {
-        breakingNews = repository.getBreakingNews()
+        breakingNews = repository.getBreakingNews().cachedIn(viewModelScope)
     }
 
     fun searchNews(query: String){
         currentQuery.value = query
     }
+
+    fun upsertArticle(article: Article) = viewModelScope.launch {
+        repository.upsertArticle(article)
+    }
+
+    fun deleteArticle(article: Article) = viewModelScope.launch{
+        repository.deleteArticle(article)
+    }
+
+    fun getAllArticles() = repository.getAllArticles()
+
 
     companion object{
         private const val CURRENT_QUERY = "current_query"

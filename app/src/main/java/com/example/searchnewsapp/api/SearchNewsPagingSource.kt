@@ -16,17 +16,20 @@ class SearchNewsPagingSource(
         val position = params.key ?: 1
         return try{
             val response = api.getAllNews(query, position, API_KEY)
-            val news = response.body()?.articles
-            if(news != null){
-                LoadResult.Page(
-                    data = news,
-                    prevKey = if(position == NEWS_STARTING_PAGE_INDEX) null else position-1,
-                    nextKey = if(news.isEmpty()) null else position+1
-                )
+            if(response.isSuccessful){
+                val news = response.body()?.articles
+                if(news != null){
+                    LoadResult.Page(
+                        data = news,
+                        prevKey = if(position == NEWS_STARTING_PAGE_INDEX) null else position-1,
+                        nextKey = if(news.isEmpty()) null else position+1
+                    )
+                }else{
+                    LoadResult.Error(IOException("News is null"))
+                }
             }else{
-                LoadResult.Error(IOException("News is null"))
+                LoadResult.Error(IOException("Response is not successful"))
             }
-
         }catch(exc: IOException){
             LoadResult.Error(exc)
         }catch(exc: HttpException){

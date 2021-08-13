@@ -5,6 +5,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.searchnewsapp.R
@@ -16,15 +17,19 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class BreakingNewsFragment : Fragment(R.layout.breaking_news_fragment) {
 
-    private lateinit var binding: BreakingNewsFragmentBinding
     private val newsViewModel by viewModels<NewsViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = BreakingNewsFragmentBinding.bind(view)
+        val binding = BreakingNewsFragmentBinding.bind(view)
 
         val newsAdapter = NewsAdapter()
+
+        newsAdapter.setOnItemClickListener{
+            val action = BreakingNewsFragmentDirections.actionBreakingNewsFragmentToArticleFragment(it)
+            findNavController().navigate(action)
+        }
 
         binding.rvBreakingNews.apply{
             setHasFixedSize(true)
@@ -41,6 +46,8 @@ class BreakingNewsFragment : Fragment(R.layout.breaking_news_fragment) {
                 progressBar.isVisible = loadState.source.refresh is LoadState.Loading
             }
         }
+
+
     }
 
 }
